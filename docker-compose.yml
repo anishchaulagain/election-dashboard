@@ -1,0 +1,25 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - ELECTION_API_URL=https://result.election.gov.np/JSONFiles/ElectionResultCentral2082.txt
+      - REDIS_URL=redis://default:IfYHf0eexoM8fnVX9VeqC3IZX5htbpKO@redis-17316.c44.us-east-1-2.ec2.cloud.redislabs.com:17316
+      - POLL_INTERVAL=30
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://backend:8000
+      - NEXT_PUBLIC_WS_URL=ws://backend:8000/ws
+    depends_on:
+      - backend
+    restart: unless-stopped
