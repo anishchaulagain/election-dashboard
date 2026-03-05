@@ -8,9 +8,9 @@ from services.event_detector import detect_events
 
 ELECTION_API_URL = os.getenv(
     "ELECTION_API_URL",
-    "https://result.election.gov.np/JSONFiles/ElectionResultCentral2082.txt"
+    "https://result.election.gov.np/Handlers/SecureJson.ashx"
 )
-POLL_INTERVAL = int(os.getenv("POLL_INTERVAL", "30"))
+POLL_INTERVAL = int(os.getenv("POLL_INTERVAL", "60"))
 
 # Connected WebSocket clients
 ws_clients: set = set()
@@ -22,15 +22,24 @@ async def fetch_election_data() -> list[dict]:
     page = 1
     rows_per_page = 500
 
-    async with httpx.AsyncClient(timeout=30.0, verify=False) as client:
+    headers = {
+        "x-csrf-token": "d99e6e506e8b4d5b92ad2afb8ff7ec8a",
+        "x-requested-with": "XMLHttpRequest",
+        "referer": "https://result.election.gov.np/",
+        "cookie": "ASP.NET_SessionId=px3sjnva4pgnx4u5bcc1oksn; CsrfToken=d99e6e506e8b4d5b92ad2afb8ff7ec8a",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    }
+
+    async with httpx.AsyncClient(timeout=30.0, verify=False, headers=headers) as client:
         while True:
             params = {
+                "file": "JSONFiles/ElectionResultCentral2082.txt",
                 "_search": "false",
                 "nd": str(int(datetime.now().timestamp() * 1000)),
                 "rows": str(rows_per_page),
                 "page": str(page),
                 "sidx": "_id",
-                "sord": "asc",
+                "sord": "desc",
             }
             try:
                 resp = await client.get(ELECTION_API_URL, params=params)
@@ -39,11 +48,19 @@ async def fetch_election_data() -> list[dict]:
                 if text.startswith('\ufeff'):
                     text = text[1:]
                 data = json.loads(text)
-                if not data or len(data) == 0:
+                
+                # The response structure might have changed. 
+                # According to the curl, it returns a list of candidate objects directly or inside a wrapper.
+                # Assuming it returns a list of candidates based on the provided sample.
+                
+                rows = data if isinstance(data, list) else data.get("rows", [])
+                
+                if not rows or len(rows) == 0:
                     break
-                all_candidates.extend(data)
-                if len(data) < rows_per_page:
+                all_candidates.extend(rows)
+                if len(rows) < rows_per_page:
                     break
+                await asyncio.sleep(0.5) # Add small delay between pages to avoid 429
                 page += 1
             except Exception as e:
                 print(f"[Polling] Error fetching page {page}: {e}")
@@ -55,6 +72,7 @@ async def fetch_election_data() -> list[dict]:
 async def poll_election_data():
     """Background polling loop that runs every POLL_INTERVAL seconds."""
     print(f"[Polling] Starting election data poller (interval: {POLL_INTERVAL}s)")
+    global ws_clients
 
     while True:
         try:

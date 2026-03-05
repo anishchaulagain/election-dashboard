@@ -99,9 +99,9 @@ export default function CandidateProfilePage() {
 
           {/* Details Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <InfoRow icon={Calendar} label="Age" value={`${candidate.AGE_YR || "—"} years`} />
+            <InfoRow icon={Calendar} label="Age" value={`${candidate.Age || "—"} years`} />
             <InfoRow icon={User} label="Gender" value={candidate.Gender || "—"} />
-            <InfoRow icon={MapPin} label="District" value={`${candidate.DistrictName} — Constituency ${candidate.ConstName}`} />
+            <InfoRow icon={MapPin} label="District" value={`${candidate.DistrictName} — Constituency ${candidate.SCConstID}`} />
             <InfoRow icon={MapPin} label="Province" value={candidate.StateName || "—"} />
             <InfoRow icon={GraduationCap} label="Education" value={candidate.QUALIFICATION || "—"} />
             <InfoRow icon={Briefcase} label="Experience" value={candidate.EXPERIENCE || "—"} />
@@ -125,10 +125,10 @@ export default function CandidateProfilePage() {
           )}
 
           {/* Link to constituency */}
-          {candidate.DistrictName && candidate.ConstName && (
+          {candidate.DistrictCd && candidate.SCConstID && (
             <div className="mt-6">
               <Link
-                href={`/constituency/${encodeURIComponent(candidate.DistrictName)}/${candidate.ConstName}`}
+                href={`/constituency/${candidate.DistrictCd}/${candidate.SCConstID}`}
                 className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline"
               >
                 View full constituency results →

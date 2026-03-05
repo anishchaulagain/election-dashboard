@@ -6,7 +6,7 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - ELECTION_API_URL=https://result.election.gov.np/JSONFiles/ElectionResultCentral2082.txt
+      - ELECTION_API_URL=https://result.election.gov.np/Handlers/SecureJson.ashx
       - REDIS_URL=redis://default:IfYHf0eexoM8fnVX9VeqC3IZX5htbpKO@redis-17316.c44.us-east-1-2.ec2.cloud.redislabs.com:17316
       - POLL_INTERVAL=30
     restart: unless-stopped

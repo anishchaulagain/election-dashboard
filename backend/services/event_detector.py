@@ -93,6 +93,6 @@ def detect_events(previous: list[dict], current: list[dict]) -> list[ElectionEve
 def _group_by_const(candidates: list[dict]) -> dict:
     groups = defaultdict(list)
     for c in candidates:
-        key = (c.get("DistrictName", ""), c.get("ConstName", 0))
+        key = (c.get("DistrictCd", 0), str(c.get("SCConstID", "0")))
         groups[key].append(c)
     return groups

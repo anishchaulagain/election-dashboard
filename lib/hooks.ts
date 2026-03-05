@@ -103,12 +103,12 @@ export function useConstituencies(params?: { state?: string; search?: string }) 
   });
 }
 
-export function useConstituency(district: string, constNum: number) {
+export function useConstituency(districtCd: number, scConstId: string) {
   return useQuery({
-    queryKey: ["constituency", district, constNum],
-    queryFn: () => api.getConstituency(district, constNum),
+    queryKey: ["constituency", districtCd, scConstId],
+    queryFn: () => api.getConstituency(districtCd, scConstId),
     refetchInterval: POLL_INTERVAL,
     staleTime: 10000,
-    enabled: !!district && !!constNum,
+    enabled: !!districtCd && !!scConstId,
   });
 }

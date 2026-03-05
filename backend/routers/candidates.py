@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Query
 from typing import Optional
-from services.analytics_service import get_candidate_detail
+from services.analytics_service import get_candidate_detail, get_aggregated_candidates
 from services.polling_service import get_candidates
 
 router = APIRouter(prefix="/api/candidates", tags=["Candidates"])
@@ -15,7 +15,7 @@ async def list_candidates(
     page: int = Query(1, ge=1),
     limit: int = Query(50, ge=1, le=500),
 ):
-    candidates = get_candidates()
+    candidates = get_aggregated_candidates()
 
     if party:
         candidates = [c for c in candidates if party.lower() in (c.get("PoliticalPartyName") or "").lower()]

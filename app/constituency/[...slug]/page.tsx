@@ -36,10 +36,10 @@ const COMPETITIVENESS_COLOR: Record<string, string> = {
 export default function ConstituencyDetailPage() {
   const params = useParams();
   const slug = params.slug as string[];
-  const district = decodeURIComponent(slug?.[0] || "");
-  const constNum = Number(slug?.[1] || 0);
-
-  const { data, isLoading } = useConstituency(district, constNum);
+  const districtCd = Number(slug?.[0] || 0);
+  const scConstId = slug?.[1] || "";
+  
+  const { data, isLoading } = useConstituency(districtCd, scConstId);
 
   if (isLoading) {
     return (
@@ -219,7 +219,7 @@ export default function ConstituencyDetailPage() {
                         {c.CandidateName}
                       </Link>
                       <p className="text-xs text-muted-foreground">
-                        {c.Gender} • {c.AGE_YR} yrs
+                        {c.Gender} • {c.Age} yrs
                       </p>
                     </td>
                     <td className="py-2.5 pr-4 text-xs truncate max-w-[200px]">

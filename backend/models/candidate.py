@@ -5,21 +5,26 @@ from typing import Optional
 class CandidateBase(BaseModel):
     CandidateID: int
     CandidateName: str
-    AGE_YR: Optional[int] = None
+    Age: Optional[int] = None
     Gender: Optional[str] = None
     PoliticalPartyName: Optional[str] = None
     SymbolName: Optional[str] = None
     DistrictName: Optional[str] = None
     StateName: Optional[str] = None
-    STATE_ID: Optional[int] = None
-    SCConstID: Optional[int] = None
-    ConstName: Optional[int] = None
+    State: Optional[int] = None
+    SCConstID: Optional[str] = None
     TotalVoteReceived: int = 0
+    CastedVote: int = 0
+    TotalVoters: int = 0
+    Rank: Optional[str] = None
     QUALIFICATION: Optional[str] = None
     EXPERIENCE: Optional[str] = None
     ADDRESS: Optional[str] = None
     FATHER_NAME: Optional[str] = None
     SPOUCE_NAME: Optional[str] = None
+    SymbolID: Optional[int] = None
+    PartyID: Optional[int] = None
+    DistrictCd: Optional[int] = None
 
 
 class CandidateDetail(CandidateBase):

@@ -82,13 +82,13 @@ export default function CandidatesListPage() {
                       {c.PoliticalPartyName}
                     </td>
                     <td className="py-2.5 pr-4 text-xs hidden lg:table-cell">
-                      {c.DistrictName} — {c.ConstName}
+                      {c.DistrictName} — {c.SCConstID}
                     </td>
                     <td className="text-right py-2.5 px-3 font-semibold">
                       {c.TotalVoteReceived.toLocaleString()}
                     </td>
                     <td className="text-right py-2.5 pl-3 text-muted-foreground hidden sm:table-cell">
-                      {c.AGE_YR || "—"}
+                      {c.Age || "—"}
                     </td>
                     <td className="text-right py-2.5 pl-3 hidden sm:table-cell">
                       <Badge variant="outline" className="text-[10px]">

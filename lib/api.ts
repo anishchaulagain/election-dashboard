@@ -3,16 +3,19 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 export interface Candidate {
   CandidateID: number;
   CandidateName: string;
-  AGE_YR: number | null;
+  Age: number | null;
   Gender: string | null;
   PoliticalPartyName: string | null;
   SymbolName: string | null;
   DistrictName: string | null;
   StateName: string | null;
-  STATE_ID: number | null;
-  SCConstID: number | null;
-  ConstName: number | null;
+  State: number | null;
+  SCConstID: string | null;
+  DistrictCd: number | null;
   TotalVoteReceived: number;
+  CastedVote: number;
+  TotalVoters: number;
+  Rank: string | null;
   QUALIFICATION: string | null;
   EXPERIENCE: string | null;
   ADDRESS: string | null;
@@ -48,7 +51,8 @@ export interface NationalStats {
 
 export interface ConstituencyInfo {
   district: string;
-  const_number: number;
+  district_cd: number;
+  const_number: string;
   state: string;
   total_votes: number;
   candidates_count: number;
@@ -58,7 +62,8 @@ export interface ConstituencyInfo {
 
 export interface ConstituencyDetail {
   district: string;
-  const_number: number;
+  district_cd: number;
+  const_number: string;
   state: string;
   total_votes: number;
   candidates: Candidate[];
@@ -71,7 +76,7 @@ export interface ConstituencyDetail {
 
 export interface ClosestRace {
   district: string;
-  const_number: number;
+  const_number: string;
   state: string;
   total_votes: number;
   vote_gap: number;
@@ -87,14 +92,14 @@ export interface RisingCandidate {
   name: string;
   party: string;
   district: string;
-  const_number: number;
+  const_number: string;
   votes_gained: number;
   current_votes: number;
 }
 
 export interface DramaEntry {
   district: string;
-  const_number: number;
+  const_number: string;
   state: string;
   score: number;
   vote_gap: number;
@@ -122,7 +127,7 @@ export interface ElectionEvent {
   emoji: string;
   message: string;
   district?: string;
-  const_number?: number;
+  const_number?: string;
   timestamp?: string;
 }
 
@@ -175,6 +180,6 @@ export const api = {
     );
   },
 
-  getConstituency: (district: string, constNum: number) =>
-    fetchAPI<ConstituencyDetail>(`/api/constituencies/${encodeURIComponent(district)}/${constNum}`),
+  getConstituency: (districtCd: number, scConstId: string) =>
+    fetchAPI<ConstituencyDetail>(`/api/constituencies/${districtCd}/${scConstId}`),
 };

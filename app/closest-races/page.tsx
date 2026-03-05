@@ -42,8 +42,8 @@ export default function ClosestRacesPage() {
         <div className="grid gap-3">
           {data?.races.map((race, i) => (
             <Link
-              key={`${race.district}-${race.const_number}`}
-              href={`/constituency/${encodeURIComponent(race.district)}/${race.const_number}`}
+              key={`${race.district_cd}-${race.const_number}`}
+              href={`/constituency/${race.district_cd}/${race.const_number}`}
             >
               <Card className="hover:bg-muted/50 transition-colors cursor-pointer">
                 <CardContent className="flex items-center justify-between p-4">

@@ -3,14 +3,38 @@ from typing import Optional
 from services.polling_service import get_candidates
 
 
+def get_aggregated_candidates() -> list[dict]:
+    """Return all unique candidates aggregated across all constituencies."""
+    candidates = get_candidates()
+    groups = _group_by_constituency(candidates)
+    
+    all_aggregated = []
+    for cs in groups.values():
+        all_aggregated.extend(cs)
+    return all_aggregated
+
+
 def _group_by_constituency(candidates: list[dict]) -> dict:
-    """Group candidates by (DistrictName, ConstName)."""
-    groups = defaultdict(list)
+    """Group candidates by (DistrictCd, SCConstID) and aggregate by CandidateID."""
+    groups = defaultdict(lambda: defaultdict(list))
     for c in candidates:
-        key = (c.get("DistrictName", ""), c.get("ConstName", 0))
-        groups[key] = groups.get(key, [])
-        groups[key].append(c)
-    return groups
+        key = (c.get("DistrictCd", 0), str(c.get("SCConstID", "0")))
+        cid = c.get("CandidateID")
+        groups[key][cid].append(c)
+
+    # Aggregate records for each candidate in each constituency
+    final_groups = defaultdict(list)
+    for const_key, candidates_by_id in groups.items():
+        for cid, records in candidates_by_id.items():
+            # Use the first record as base
+            base = dict(records[0])
+            # If multiple records, we sum votes (likely polling station level data)
+            if len(records) > 1:
+                base["TotalVoteReceived"] = sum(r.get("TotalVoteReceived", 0) for r in records)
+                base["CastedVote"] = sum(r.get("CastedVote", 0) for r in records)
+            final_groups[const_key].append(base)
+    
+    return final_groups
 
 
 def _get_constituency_leader(candidates: list[dict]):
@@ -108,10 +132,17 @@ def get_national_stats() -> dict:
 
     leading_party = party_list[0]["party"] if party_list and party_list[0]["seats_leading"] > 0 else None
 
+    # Count unique candidates across all constituencies
+    unique_candidate_ids = set()
+    for cs in groups.values():
+        for c in cs:
+            if c.get("CandidateID"):
+                unique_candidate_ids.add(c.get("CandidateID"))
+
     from services.polling_service import get_last_updated
 
     return {
-        "total_candidates": len(candidates),
+        "total_candidates": len(unique_candidate_ids),
         "total_votes": total_votes,
         "total_constituencies": len(groups),
         "constituencies_reporting": constituencies_reporting,
@@ -138,8 +169,8 @@ def get_closest_races(limit: int = 20) -> list[dict]:
         sorted_c = sorted(cs, key=lambda x: x.get("TotalVoteReceived", 0), reverse=True)
 
         races.append({
-            "district": district,
-            "const_number": const_num,
+            "district": cs[0].get("DistrictName", ""),
+            "const_number": cs[0].get("SCConstID", "0"),
             "state": cs[0].get("StateName", "") if cs else "",
             "total_votes": total_votes,
             "vote_gap": gap,
@@ -174,7 +205,7 @@ def get_rising_candidates(limit: int = 20) -> list[dict]:
                 "name": c.get("CandidateName", ""),
                 "party": c.get("PoliticalPartyName", ""),
                 "district": c.get("DistrictName", ""),
-                "const_number": c.get("ConstName", 0),
+                "const_number": c.get("SCConstID", "0"),
                 "votes_gained": c.get("TotalVoteReceived", 0),
                 "current_votes": c.get("TotalVoteReceived", 0),
             }
@@ -195,7 +226,7 @@ def get_rising_candidates(limit: int = 20) -> list[dict]:
                 "name": c.get("CandidateName", ""),
                 "party": c.get("PoliticalPartyName", ""),
                 "district": c.get("DistrictName", ""),
-                "const_number": c.get("ConstName", 0),
+                "const_number": c.get("SCConstID", "0"),
                 "votes_gained": gained,
                 "current_votes": current_votes,
             })
@@ -224,7 +255,7 @@ def get_demographics() -> dict:
         gender_dist[gender] += 1
 
     # Age
-    ages = [c.get("AGE_YR", 0) for c in candidates if c.get("AGE_YR")]
+    ages = [c.get("Age", 0) for c in candidates if c.get("Age")]
     age_buckets = {"18-30": 0, "31-40": 0, "41-50": 0, "51-60": 0, "61-70": 0, "70+": 0}
     for age in ages:
         if age <= 30:
@@ -264,8 +295,8 @@ def get_demographics() -> dict:
         if leader and leader.get("Gender") == "महिला" and leader.get("TotalVoteReceived", 0) > 0:
             female_leading += 1
 
-    youngest = min(candidates, key=lambda x: x.get("AGE_YR", 999) or 999) if ages else None
-    oldest = max(candidates, key=lambda x: x.get("AGE_YR", 0) or 0) if ages else None
+    youngest = min(candidates, key=lambda x: x.get("Age", 999) or 999) if ages else None
+    oldest = max(candidates, key=lambda x: x.get("Age", 0) or 0) if ages else None
     avg_age = sum(ages) / len(ages) if ages else 0
 
     return {
@@ -274,11 +305,11 @@ def get_demographics() -> dict:
         "education_distribution": dict(edu_dist),
         "female_leading_count": female_leading,
         "youngest_candidate": {
-            "name": youngest.get("CandidateName"), "age": youngest.get("AGE_YR"),
+            "name": youngest.get("CandidateName"), "age": youngest.get("Age"),
             "party": youngest.get("PoliticalPartyName"), "district": youngest.get("DistrictName"),
         } if youngest else None,
         "oldest_candidate": {
-            "name": oldest.get("CandidateName"), "age": oldest.get("AGE_YR"),
+            "name": oldest.get("CandidateName"), "age": oldest.get("Age"),
             "party": oldest.get("PoliticalPartyName"), "district": oldest.get("DistrictName"),
         } if oldest else None,
         "average_age": round(avg_age, 1),
@@ -304,8 +335,8 @@ def get_drama_index(limit: int = 20) -> list[dict]:
         score = gap_score * 0.5 + vote_density * 0.3 + candidate_factor * 0.2
 
         drama.append({
-            "district": district,
-            "const_number": const_num,
+            "district": cs[0].get("DistrictName", ""),
+            "const_number": cs[0].get("SCConstID", "0"),
             "state": cs[0].get("StateName", "") if cs else "",
             "score": round(score, 1),
             "vote_gap": gap,
@@ -322,11 +353,11 @@ def get_drama_index(limit: int = 20) -> list[dict]:
     return drama[:limit]
 
 
-def get_constituency_detail(district: str, const_num: int) -> Optional[dict]:
+def get_constituency_detail(district_cd: int, sc_const_id: str) -> Optional[dict]:
     candidates = get_candidates()
     matching = [
         c for c in candidates
-        if c.get("DistrictName") == district and c.get("ConstName") == const_num
+        if c.get("DistrictCd") == district_cd and str(c.get("SCConstID")) == str(sc_const_id)
     ]
 
     if not matching:
@@ -344,8 +375,9 @@ def get_constituency_detail(district: str, const_num: int) -> Optional[dict]:
         )
 
     return {
-        "district": district,
-        "const_number": const_num,
+        "district": matching[0].get("DistrictName", ""),
+        "district_cd": district_cd,
+        "const_number": sc_const_id,
         "state": matching[0].get("StateName", ""),
         "total_votes": total_votes,
         "candidates": sorted_c,
@@ -364,11 +396,11 @@ def get_candidate_detail(candidate_id: int) -> Optional[dict]:
         return None
 
     # Get constituency info
-    district = candidate.get("DistrictName", "")
-    const_num = candidate.get("ConstName", 0)
+    district_cd = candidate.get("DistrictCd", 0)
+    sc_const_id = candidate.get("SCConstID", "0")
     constituency_candidates = [
         c for c in candidates
-        if c.get("DistrictName") == district and c.get("ConstName") == const_num
+        if c.get("DistrictCd") == district_cd and str(c.get("SCConstID")) == str(sc_const_id)
     ]
     sorted_cc = sorted(constituency_candidates, key=lambda x: x.get("TotalVoteReceived", 0), reverse=True)
     total_votes = sum(c.get("TotalVoteReceived", 0) for c in constituency_candidates)
@@ -395,7 +427,7 @@ def _generate_insight(candidate: dict, rank: Optional[int], total_candidates: in
     parts = []
     name = candidate.get("CandidateName", "Unknown")
     party = candidate.get("PoliticalPartyName", "")
-    age = candidate.get("AGE_YR", 0)
+    age = candidate.get("Age", 0)
     gender = candidate.get("Gender", "")
     exp = candidate.get("EXPERIENCE", "")
     qual = candidate.get("QUALIFICATION", "")
