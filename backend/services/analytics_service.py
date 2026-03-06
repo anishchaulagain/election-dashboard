@@ -170,6 +170,7 @@ def get_closest_races(limit: int = 20) -> list[dict]:
 
         races.append({
             "district": cs[0].get("DistrictName", ""),
+            "district_cd": cs[0].get("DistrictCd", 0),
             "const_number": cs[0].get("SCConstID", "0"),
             "state": cs[0].get("StateName", "") if cs else "",
             "total_votes": total_votes,
@@ -205,6 +206,7 @@ def get_rising_candidates(limit: int = 20) -> list[dict]:
                 "name": c.get("CandidateName", ""),
                 "party": c.get("PoliticalPartyName", ""),
                 "district": c.get("DistrictName", ""),
+                "district_cd": c.get("DistrictCd", 0),
                 "const_number": c.get("SCConstID", "0"),
                 "votes_gained": c.get("TotalVoteReceived", 0),
                 "current_votes": c.get("TotalVoteReceived", 0),
@@ -226,6 +228,7 @@ def get_rising_candidates(limit: int = 20) -> list[dict]:
                 "name": c.get("CandidateName", ""),
                 "party": c.get("PoliticalPartyName", ""),
                 "district": c.get("DistrictName", ""),
+                "district_cd": c.get("DistrictCd", 0),
                 "const_number": c.get("SCConstID", "0"),
                 "votes_gained": gained,
                 "current_votes": current_votes,
@@ -336,6 +339,7 @@ def get_drama_index(limit: int = 20) -> list[dict]:
 
         drama.append({
             "district": cs[0].get("DistrictName", ""),
+            "district_cd": cs[0].get("DistrictCd", 0),
             "const_number": cs[0].get("SCConstID", "0"),
             "state": cs[0].get("StateName", "") if cs else "",
             "score": round(score, 1),

@@ -76,6 +76,7 @@ export interface ConstituencyDetail {
 
 export interface ClosestRace {
   district: string;
+  district_cd: number;
   const_number: string;
   state: string;
   total_votes: number;
@@ -92,6 +93,7 @@ export interface RisingCandidate {
   name: string;
   party: string;
   district: string;
+  district_cd: number;
   const_number: string;
   votes_gained: number;
   current_votes: number;
@@ -99,6 +101,7 @@ export interface RisingCandidate {
 
 export interface DramaEntry {
   district: string;
+  district_cd: number;
   const_number: string;
   state: string;
   score: number;
