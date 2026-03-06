@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from routers import candidates, constituencies, analytics
+from routers import candidates, constituencies, analytics, polling
 from services.polling_service import poll_election_data
 
 
@@ -40,6 +40,7 @@ app.add_middleware(
 app.include_router(candidates.router)
 app.include_router(constituencies.router)
 app.include_router(analytics.router)
+app.include_router(polling.router)
 
 
 @app.get("/")

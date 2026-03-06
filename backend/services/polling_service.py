@@ -143,49 +143,67 @@ async def fetch_featured_content() -> dict:
             return {}
 
 
+async def fetch_and_store_all() -> dict:
+    """Core logic to fetch data from all sources and update cache."""
+    print(f"[Polling] Sync started at {datetime.now().isoformat()}")
+    results = {"success": False, "candidates": 0, "events": 0}
+    
+    try:
+        candidates = await fetch_election_data()
+        party_top5 = await fetch_party_top5()
+        fact_checks = await fetch_fact_checks()
+        featured = await fetch_featured_content()
+
+        if candidates:
+            # Get previous data for comparison
+            previous = cache.get_json("election:candidates")
+
+            # Store new data
+            cache.set_json("election:candidates", candidates, ex=120)
+            if party_top5:
+                cache.set_json("election:party_top5", party_top5, ex=120)
+            
+            if fact_checks:
+                cache.set_json("election:fact_checks", fact_checks, ex=600)
+            
+            if featured:
+                cache.set_json("election:featured", featured, ex=120)
+            
+            cache.set("election:last_updated", datetime.now().isoformat(), ex=120)
+            cache.set("election:candidate_count", str(len(candidates)), ex=120)
+
+            print(f"[Polling] Fetched {len(candidates)} candidates")
+            results["candidates"] = len(candidates)
+
+            # Detect events by comparing with previous data
+            if previous:
+                events = detect_events(previous, candidates)
+                if events:
+                    # Store events
+                    existing_events = cache.get_json("election:events") or []
+                    all_events = events + existing_events
+                    cache.set_json("election:events", all_events[:100], ex=600)
+                    results["events"] = len(events)
+            
+            results["success"] = True
+
+    except Exception as e:
+        print(f"[Polling] Sync error: {e}")
+        results["error"] = str(e)
+
+    print(f"[Polling] Sync completed at {datetime.now().isoformat()}")
+    return results
+
+
 async def poll_election_data():
     """Background polling loop that runs every POLL_INTERVAL seconds."""
     print(f"[Polling] Starting election data poller (interval: {POLL_INTERVAL}s)")
 
     while True:
         try:
-            candidates = await fetch_election_data()
-            party_top5 = await fetch_party_top5()
-            fact_checks = await fetch_fact_checks()
-            featured = await fetch_featured_content()
-
-            if candidates:
-                # Get previous data for comparison
-                previous = cache.get_json("election:candidates")
-
-                # Store new data
-                cache.set_json("election:candidates", candidates, ex=120)
-                if party_top5:
-                    cache.set_json("election:party_top5", party_top5, ex=120)
-                
-                if fact_checks:
-                    cache.set_json("election:fact_checks", fact_checks, ex=600)
-                
-                if featured:
-                    cache.set_json("election:featured", featured, ex=120)
-                
-                cache.set("election:last_updated", datetime.now().isoformat(), ex=120)
-                cache.set("election:candidate_count", str(len(candidates)), ex=120)
-
-                print(f"[Polling] Fetched {len(candidates)} candidates at {datetime.now().isoformat()}")
-
-                # Detect events by comparing with previous data
-                if previous:
-                    events = detect_events(previous, candidates)
-                    if events:
-                        # Store events
-                        existing_events = cache.get_json("election:events") or []
-                        all_events = events + existing_events
-                        cache.set_json("election:events", all_events[:100], ex=600)
-
-
+            await fetch_and_store_all()
         except Exception as e:
-            print(f"[Polling] Error: {e}")
+            print(f"[Polling] Loop error: {e}")
 
         await asyncio.sleep(POLL_INTERVAL)
 

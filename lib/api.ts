@@ -1,4 +1,9 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+let API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+
+// Ensure absolute URL if it looks like a domain
+if (API_BASE && !API_BASE.startsWith("http://") && !API_BASE.startsWith("https://") && !API_BASE.startsWith("/")) {
+  API_BASE = `https://${API_BASE}`;
+}
 
 export interface Candidate {
   CandidateID: number;
