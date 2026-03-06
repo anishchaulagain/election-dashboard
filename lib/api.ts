@@ -137,8 +137,44 @@ async function fetchAPI<T>(path: string): Promise<T> {
   return res.json();
 }
 
+export interface PartyTop5 {
+  PartyId: number;
+  PoliticalPartyName: string;
+  TotWin: number;
+  TotLead: number;
+  TotWinLead: number;
+  SymbolID: number;
+}
+
+
+export interface FactCheckClaim {
+  claim: string;
+  sources: string[];
+  verdict: string;
+  evidence: string;
+}
+
+export interface FactCheckResult {
+  id: string;
+  story_id: string;
+  story_title: string;
+  story_source: string;
+  story_url: string;
+  verdict: string;
+  verdict_summary: string;
+  confidence: number;
+  claims_analyzed: FactCheckClaim[];
+  key_finding: string;
+  context: string;
+  checked_at: string;
+}
+
 export const api = {
   getNationalStats: () => fetchAPI<NationalStats>("/api/analytics/national"),
+
+  getPartyTop5: () => fetchAPI<{ parties: PartyTop5[] }>("/api/analytics/party-top5"),
+
+  getFactChecks: () => fetchAPI<{ results: FactCheckResult[] }>("/api/analytics/fact-checks"),
 
   getPartyPerformance: () =>
     fetchAPI<{ parties: PartyStats[] }>("/api/analytics/parties"),

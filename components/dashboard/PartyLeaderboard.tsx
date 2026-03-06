@@ -11,7 +11,7 @@ import {
   Cell,
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { PartyStats } from "@/lib/api";
+import type { PartyStats, PartyTop5 } from "@/lib/api";
 
 const PARTY_COLORS: Record<string, string> = {
   UML: "#1e40af",
@@ -23,21 +23,47 @@ const PARTY_COLORS: Record<string, string> = {
   Other: "#6b7280",
 };
 
+// Short name mapper for Top 5 API which only gives full names
+const getShortName = (fullName: string) => {
+  if (fullName.includes("एकीकृत मार्क्सवादी लेनिनवादी")) return "UML";
+  if (fullName.includes("नेपाली काँग्रेस")) return "Congress";
+  if (fullName.includes("माओवादी")) return "Maoist";
+  if (fullName.includes("राष्ट्रिय स्वतन्त्र पार्टी")) return "RSP";
+  if (fullName.includes("राष्ट्रिय प्रजातन्त्र पार्टी")) return "RPP";
+  if (fullName.includes("जनता समाजवादी")) return "JSP";
+  return "Other";
+};
+
 interface PartyLeaderboardProps {
-  data: PartyStats[];
+  top5?: PartyTop5[];
+  fallbackData: PartyStats[];
 }
 
-export function PartyLeaderboard({ data }: PartyLeaderboardProps) {
-  const chartData = data
-    .filter((p) => p.seats_leading > 0 || p.candidates_count > 20)
-    .slice(0, 10)
-    .map((p) => ({
-      name: p.short_name || p.party.slice(0, 15),
-      seats: p.seats_leading,
-      votes: p.total_votes,
-      fullName: p.party,
-      color: PARTY_COLORS[p.short_name] || PARTY_COLORS.Other,
-    }));
+export function PartyLeaderboard({ top5, fallbackData }: PartyLeaderboardProps) {
+  let chartData = [];
+
+  if (top5 && top5.length > 0) {
+    chartData = top5.map((p) => {
+      const short = getShortName(p.PoliticalPartyName);
+      return {
+        name: short,
+        seats: p.TotWinLead,
+        fullName: p.PoliticalPartyName,
+        color: PARTY_COLORS[short] || PARTY_COLORS.Other,
+      };
+    });
+  } else {
+    chartData = fallbackData
+      .filter((p) => p.seats_leading > 0 || p.candidates_count > 20)
+      .slice(0, 10)
+      .map((p) => ({
+        name: p.short_name || p.party.slice(0, 15),
+        seats: p.seats_leading,
+        votes: p.total_votes,
+        fullName: p.party,
+        color: PARTY_COLORS[p.short_name] || PARTY_COLORS.Other,
+      }));
+  }
 
   return (
     <Card className="col-span-full lg:col-span-2">

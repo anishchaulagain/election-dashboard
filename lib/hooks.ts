@@ -14,6 +14,24 @@ export function useNationalStats() {
   });
 }
 
+export function usePartyTop5() {
+  return useQuery({
+    queryKey: ["party-top5"],
+    queryFn: api.getPartyTop5,
+    refetchInterval: POLL_INTERVAL,
+    staleTime: 10000,
+  });
+}
+
+export function useFactChecks() {
+  return useQuery({
+    queryKey: ["fact-checks"],
+    queryFn: api.getFactChecks,
+    refetchInterval: POLL_INTERVAL * 2, // Fact checks change less frequently
+    staleTime: 30000,
+  });
+}
+
 export function usePartyPerformance() {
   return useQuery({
     queryKey: ["party-performance"],

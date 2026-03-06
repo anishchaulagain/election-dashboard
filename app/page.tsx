@@ -1,10 +1,12 @@
 "use client";
 
-import { useNationalStats } from "@/lib/hooks";
+import { useNationalStats, usePartyTop5 } from "@/lib/hooks";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { PartyLeaderboard } from "@/components/dashboard/PartyLeaderboard";
 import { VoteSharePie } from "@/components/charts/VoteSharePie";
 import { LiveTicker } from "@/components/ticker/LiveTicker";
+import { PartyStandingsCard } from "@/components/dashboard/PartyStandingsCard";
+import { FactCheckFeed } from "@/components/dashboard/FactCheckFeed";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -18,7 +20,10 @@ import {
 import Link from "next/link";
 
 export default function DashboardPage() {
-  const { data: stats, isLoading } = useNationalStats();
+  const { data: stats, isLoading: statsLoading } = useNationalStats();
+  const { data: top5, isLoading: top5Loading } = usePartyTop5();
+
+  const isLoading = statsLoading || top5Loading;
 
   return (
     <div>
@@ -88,6 +93,11 @@ export default function DashboardPage() {
       </section>
 
       <div className="container mx-auto px-4 py-8 space-y-8">
+        {/* Official Standings Row */}
+        {top5?.parties && top5.parties.length > 0 && (
+          <PartyStandingsCard parties={top5.parties} />
+        )}
+
         {/* Stats Cards Row */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
           <StatsCard
@@ -134,9 +144,18 @@ export default function DashboardPage() {
 
         {/* Charts Row */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <PartyLeaderboard data={stats?.party_seats || []} />
+          <PartyLeaderboard top5={top5?.parties || []} fallbackData={stats?.party_seats || []} />
           <VoteSharePie data={stats?.party_seats || []} />
         </div>
+
+        {/* Fact Check Center */}
+        <section className="space-y-4">
+          <div className="flex items-center gap-2">
+             <div className="h-8 w-1 bg-red-600 rounded-full" />
+             <h2 className="text-2xl font-black tracking-tight uppercase">Election Integrity Center</h2>
+          </div>
+          <FactCheckFeed />
+        </section>
 
         {/* Party Table */}
         {stats?.party_seats && stats.party_seats.length > 0 && (
