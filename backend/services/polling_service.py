@@ -3,7 +3,8 @@ import httpx
 import os
 import json
 from datetime import datetime
-from cache.redis_client import cache
+import traceback
+from cache.redis_client import cache, REDIS_AVAILABLE
 from services.event_detector import detect_events
 
 POLL_INTERVAL = int(os.getenv("POLL_INTERVAL", "60"))
@@ -74,7 +75,8 @@ async def fetch_election_data() -> list[dict]:
                 await asyncio.sleep(0.5) # Add small delay between pages to avoid 429
                 page += 1
             except Exception as e:
-                print(f"[Polling] Error fetching page {page}: {e}")
+                print(f"[Polling] Error fetching candidates page {page}: {type(e).__name__}: {e}")
+                print(traceback.format_exc())
                 break
 
     return all_candidates
@@ -105,7 +107,7 @@ async def fetch_party_top5() -> list[dict]:
             data = json.loads(text)
             return data if isinstance(data, list) else []
         except Exception as e:
-            print(f"[Polling] Error fetching Party Top 5: {e}")
+            print(f"[Polling] Error fetching Party Top 5: {type(e).__name__}: {e}")
             return []
 
 
@@ -139,14 +141,19 @@ async def fetch_featured_content() -> dict:
                     return json.loads(value_str)
             return {}
         except Exception as e:
-            print(f"[Polling] Error fetching Featured Content: {e}")
+            print(f"[Polling] Error fetching Featured Content: {type(e).__name__}: {e}")
+            if 'resp' in locals() and hasattr(resp, 'text'):
+                print(f"[Polling] Response snippet: {resp.text[:200]}")
             return {}
 
 
 async def fetch_and_store_all() -> dict:
     """Core logic to fetch data from all sources and update cache."""
     print(f"[Polling] Sync started at {datetime.now().isoformat()}")
-    results = {"success": False, "candidates": 0, "events": 0}
+    results = {"success": False, "candidates": 0, "events": 0, "redis_available": REDIS_AVAILABLE}
+    
+    if not REDIS_AVAILABLE:
+        print("[Polling] Warning: Redis is not available, sync will only update in-memory store.")
     
     try:
         candidates = await fetch_election_data()
