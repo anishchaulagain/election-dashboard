@@ -7,9 +7,6 @@ interface ElectionStore {
   addEvents: (newEvents: ElectionEvent[]) => void;
   clearEvents: () => void;
 
-  // WebSocket connection
-  wsConnected: boolean;
-  setWsConnected: (connected: boolean) => void;
 
   // Last update
   lastUpdate: string | null;
@@ -30,8 +27,6 @@ export const useElectionStore = create<ElectionStore>((set) => ({
     })),
   clearEvents: () => set({ events: [] }),
 
-  wsConnected: false,
-  setWsConnected: (connected) => set({ wsConnected: connected }),
 
   lastUpdate: null,
   setLastUpdate: (ts) => set({ lastUpdate: ts }),

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useElectionStore } from "@/lib/store";
+import { useEvents } from "@/lib/hooks";
 import {
   BarChart3,
   Users,
@@ -27,7 +28,8 @@ const navItems = [
 
 export function Navbar() {
   const pathname = usePathname();
-  const { wsConnected } = useElectionStore();
+  const { isLoading, isError } = useEvents();
+  const isLive = !isLoading && !isError;
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-xl">
@@ -77,13 +79,13 @@ export function Navbar() {
             <div
               className={cn(
                 "h-2 w-2 rounded-full",
-                wsConnected
+                isLive
                   ? "bg-green-500 live-indicator"
                   : "bg-yellow-500 animate-pulse"
               )}
             />
             <span className="hidden sm:inline text-xs font-medium text-muted-foreground">
-              {wsConnected ? "LIVE" : "CONNECTING"}
+              {isLive ? "LIVE" : "CONNECTING"}
             </span>
           </div>
 

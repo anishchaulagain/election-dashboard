@@ -25,8 +25,6 @@ HOR_PARTY_TOP5_API_URL = os.getenv(
 )
 FACT_CHECK_API_TOKEN = os.getenv("FACT_CHECK_API_TOKEN")
 
-# Connected WebSocket clients
-ws_clients: set = set()
 
 
 async def fetch_election_data() -> list[dict]:
@@ -148,7 +146,6 @@ async def fetch_featured_content() -> dict:
 async def poll_election_data():
     """Background polling loop that runs every POLL_INTERVAL seconds."""
     print(f"[Polling] Starting election data poller (interval: {POLL_INTERVAL}s)")
-    global ws_clients
 
     while True:
         try:
@@ -186,32 +183,6 @@ async def poll_election_data():
                         all_events = events + existing_events
                         cache.set_json("election:events", all_events[:100], ex=600)
 
-                        # Broadcast to WebSocket clients
-                        event_data = json.dumps(
-                            {"type": "events", "data": [e.dict() for e in events]},
-                            ensure_ascii=False
-                        )
-                        disconnected = set()
-                        for ws in ws_clients:
-                            try:
-                                await ws.send_text(event_data)
-                            except Exception:
-                                disconnected.add(ws)
-                        ws_clients -= disconnected
-
-                # Also broadcast updated stats
-                stats_data = json.dumps(
-                    {"type": "update", "candidate_count": len(candidates),
-                     "timestamp": datetime.now().isoformat()},
-                    ensure_ascii=False
-                )
-                disconnected = set()
-                for ws in ws_clients:
-                    try:
-                        await ws.send_text(stats_data)
-                    except Exception:
-                        disconnected.add(ws)
-                ws_clients -= disconnected
 
         except Exception as e:
             print(f"[Polling] Error: {e}")

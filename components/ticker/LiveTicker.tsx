@@ -1,21 +1,15 @@
 "use client";
 
-import { useElectionStore } from "@/lib/store";
 import { useEvents, useFeaturedContent } from "@/lib/hooks";
 import { useEffect, useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { ElectionEvent } from "@/lib/api";
 
 export function LiveTicker() {
-  const { events, addEvents } = useElectionStore();
   const { data: eventData } = useEvents();
   const { data: featuredData } = useFeaturedContent();
 
-  useEffect(() => {
-    if (eventData?.events && eventData.events.length > 0) {
-      addEvents(eventData.events);
-    }
-  }, [eventData, addEvents]);
+  const events = eventData?.events || [];
 
   const tickerItems = useMemo(() => {
     const items: ElectionEvent[] = [];

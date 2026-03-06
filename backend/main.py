@@ -1,13 +1,13 @@
 import asyncio
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 
 load_dotenv()
 
 from routers import candidates, constituencies, analytics
-from services.polling_service import poll_election_data, ws_clients
+from services.polling_service import poll_election_data
 
 
 @asynccontextmanager
@@ -57,24 +57,7 @@ async def root():
             "/api/analytics/demographics",
             "/api/analytics/drama-index",
             "/api/analytics/events",
-            "/ws",
         ]
     }
 
 
-@app.websocket("/ws")
-async def websocket_endpoint(websocket: WebSocket):
-    await websocket.accept()
-    ws_clients.add(websocket)
-    print(f"[WS] Client connected. Total: {len(ws_clients)}")
-    try:
-        while True:
-            # Keep connection alive, receive pings
-            data = await websocket.receive_text()
-            if data == "ping":
-                await websocket.send_text("pong")
-    except WebSocketDisconnect:
-        ws_clients.discard(websocket)
-        print(f"[WS] Client disconnected. Total: {len(ws_clients)}")
-    except Exception:
-        ws_clients.discard(websocket)
