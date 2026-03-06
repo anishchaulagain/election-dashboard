@@ -45,14 +45,14 @@ export function PartyStandingsCard({ parties }: PartyStandingsCardProps) {
               
               <div className="flex flex-col gap-4 relative z-10">
                 <div className="flex items-center gap-3">
-                  <div className="h-14 w-14 flex-shrink-0 flex items-center justify-center rounded-xl bg-white shadow-sm ring-1 ring-border p-2 group-hover:scale-110 transition-transform duration-300">
+                  {/* <div className="h-14 w-14 flex-shrink-0 flex items-center justify-center rounded-xl bg-white shadow-sm ring-1 ring-border p-2 group-hover:scale-110 transition-transform duration-300">
                     <img 
                       src={`https://result.election.gov.np/Handlers/SymbolImage.ashx?ID=${party.SymbolID}`} 
                       alt={party.PoliticalPartyName} 
                       className="h-full w-full object-contain"
                       loading="lazy"
                     />
-                  </div>
+                  </div> */}
                   <div className="flex-1 min-w-0">
                     <h3 className="font-bold text-sm leading-snug line-clamp-2 text-foreground group-hover:text-primary transition-colors">
                       {party.PoliticalPartyName}
@@ -68,8 +68,8 @@ export function PartyStandingsCard({ parties }: PartyStandingsCardProps) {
                     </span>
                   </div>
                   <div className="flex flex-col items-center justify-center p-3 rounded-xl bg-blue-500/5 ring-1 ring-blue-500/10 group-hover:bg-blue-500/10 transition-colors">
-                    <span className="text-[10px] uppercase font-bold text-blue-600/70 tracking-tighter">Leading In</span>
-                    <span className="text-3xl font-black text-blue-600 tabular-nums leading-none mt-1">
+                    <span className="text-[10px] uppercase font-bold text-yellow-600/70 tracking-tighter">Leading In</span>
+                    <span className="text-3xl font-black text-yellow-600 tabular-nums leading-none mt-1">
                       {party.TotLead}
                     </span>
                   </div>

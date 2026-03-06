@@ -6,6 +6,7 @@ from datetime import datetime
 from cache.redis_client import cache
 from services.event_detector import detect_events
 
+POLL_INTERVAL = int(os.getenv("POLL_INTERVAL", "60"))
 ELECTION_API_URL = os.getenv(
     "ELECTION_API_URL",
     "https://result.election.gov.np/Handlers/SecureJson.ashx"
@@ -14,9 +15,15 @@ FACT_CHECK_API_URL = os.getenv(
     "FACT_CHECK_API_URL",
     "https://nepalosint.com/api/v1/fact-check/results?limit=20&hours=168"
 )
+FEATURED_CONTENT_API_URL = os.getenv(
+    "FEATURED_CONTENT_API_URL",
+    "https://keyvalue.hamropatro.com/kv/get/major-election-2082-featured_content::-1"
+)
+HOR_PARTY_TOP5_API_URL = os.getenv(
+    "HOR_PARTY_TOP5_API_URL",
+    "https://result.election.gov.np/Handlers/HoRPartyTop5.ashx"
+)
 FACT_CHECK_API_TOKEN = os.getenv("FACT_CHECK_API_TOKEN")
-POLL_INTERVAL = int(os.getenv("POLL_INTERVAL", "60"))
-FEATURED_CONTENT_API_URL = "https://keyvalue.hamropatro.com/kv/get/major-election-2082-featured_content::-1"
 
 # Connected WebSocket clients
 ws_clients: set = set()
