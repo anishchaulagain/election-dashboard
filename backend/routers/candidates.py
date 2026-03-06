@@ -1,9 +1,14 @@
 from fastapi import APIRouter, Query
 from typing import Optional
 from services.analytics_service import get_candidate_detail, get_aggregated_candidates
-from services.polling_service import get_candidates
+from services.polling_service import get_candidates, get_featured_content
 
 router = APIRouter(prefix="/api/candidates", tags=["Candidates"])
+
+
+@router.get("/featured")
+async def get_featured():
+    return get_featured_content()
 
 
 @router.get("")

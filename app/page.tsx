@@ -5,6 +5,7 @@ import { StatsCard } from "@/components/dashboard/StatsCard";
 import { PartyLeaderboard } from "@/components/dashboard/PartyLeaderboard";
 import { VoteSharePie } from "@/components/charts/VoteSharePie";
 import { LiveTicker } from "@/components/ticker/LiveTicker";
+import { FeaturedContent } from "@/components/dashboard/FeaturedContent";
 import { PartyStandingsCard } from "@/components/dashboard/PartyStandingsCard";
 import { FactCheckFeed } from "@/components/dashboard/FactCheckFeed";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -97,6 +98,9 @@ export default function DashboardPage() {
         {top5?.parties && top5.parties.length > 0 && (
           <PartyStandingsCard parties={top5.parties} />
         )}
+
+        {/* Featured Content (Candidates & Areas) */}
+        <FeaturedContent />
 
         {/* Stats Cards Row */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">

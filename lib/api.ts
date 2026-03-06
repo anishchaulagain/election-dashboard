@@ -131,6 +131,56 @@ export interface ElectionEvent {
   timestamp?: string;
 }
 
+export interface FeaturedCandidate {
+  electionId: string;
+  candidateId: string;
+  candidateEnglishName: string;
+  candidateName: string;
+  imageUrl: string;
+  slug: string;
+  areaId: string;
+  areaName: string;
+  areaNameEnglish: string;
+  districtId: string;
+  districtName: string;
+  districtNameEnglish: string;
+  partyId: string;
+  politicalPartyName: string;
+  votes: number;
+  voteDifferenceInPercent: number;
+  seatType: string;
+  featured: boolean;
+  winner: boolean;
+  leading: boolean;
+  lastUpdated: number;
+  featuredLastUpdated: number;
+}
+
+export interface FeaturedArea {
+  electionId: string;
+  resultStatus: string;
+  areaId: string;
+  districtId: string;
+  districtName: string;
+  districtEnglishName: string;
+  stateId: string;
+  stateName: string;
+  type: string;
+  areaName: string;
+  areaNameEnglish: string;
+  resultFinal: boolean;
+  featured: boolean;
+  lastUpdated: number;
+  totalCastVotes: number;
+  totalCountedVotes: number;
+  candidateResults: FeaturedCandidate[];
+}
+
+export interface FeaturedContent {
+  featuredCandidates: FeaturedCandidate[];
+  featuredAreas: FeaturedArea[];
+}
+
 async function fetchAPI<T>(path: string): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, { cache: "no-store" });
   if (!res.ok) throw new Error(`API Error: ${res.status}`);
@@ -175,6 +225,8 @@ export const api = {
   getPartyTop5: () => fetchAPI<{ parties: PartyTop5[] }>("/api/analytics/party-top5"),
 
   getFactChecks: () => fetchAPI<{ results: FactCheckResult[] }>("/api/analytics/fact-checks"),
+
+  getFeaturedContent: () => fetchAPI<FeaturedContent>("/api/candidates/featured"),
 
   getPartyPerformance: () =>
     fetchAPI<{ parties: PartyStats[] }>("/api/analytics/parties"),

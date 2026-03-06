@@ -16,6 +16,7 @@ FACT_CHECK_API_URL = os.getenv(
 )
 FACT_CHECK_API_TOKEN = os.getenv("FACT_CHECK_API_TOKEN")
 POLL_INTERVAL = int(os.getenv("POLL_INTERVAL", "60"))
+FEATURED_CONTENT_API_URL = "https://keyvalue.hamropatro.com/kv/get/major-election-2082-featured_content::-1"
 
 # Connected WebSocket clients
 ws_clients: set = set()
@@ -119,6 +120,24 @@ async def fetch_fact_checks() -> list[dict]:
             return []
 
 
+async def fetch_featured_content() -> dict:
+    """Fetch featured content from Hamro Patro API."""
+    async with httpx.AsyncClient(timeout=30.0, verify=False) as client:
+        try:
+            resp = await client.get(FEATURED_CONTENT_API_URL)
+            resp.raise_for_status()
+            data = resp.json()
+            # The API returns a list with one item containing the stringified JSON value
+            if data.get("list") and len(data["list"]) > 0:
+                value_str = data["list"][0].get("value")
+                if value_str:
+                    return json.loads(value_str)
+            return {}
+        except Exception as e:
+            print(f"[Polling] Error fetching Featured Content: {e}")
+            return {}
+
+
 async def poll_election_data():
     """Background polling loop that runs every POLL_INTERVAL seconds."""
     print(f"[Polling] Starting election data poller (interval: {POLL_INTERVAL}s)")
@@ -129,6 +148,7 @@ async def poll_election_data():
             candidates = await fetch_election_data()
             party_top5 = await fetch_party_top5()
             fact_checks = await fetch_fact_checks()
+            featured = await fetch_featured_content()
 
             if candidates:
                 # Get previous data for comparison
@@ -141,6 +161,9 @@ async def poll_election_data():
                 
                 if fact_checks:
                     cache.set_json("election:fact_checks", fact_checks, ex=600)
+                
+                if featured:
+                    cache.set_json("election:featured", featured, ex=120)
                 
                 cache.set("election:last_updated", datetime.now().isoformat(), ex=120)
                 cache.set("election:candidate_count", str(len(candidates)), ex=120)
@@ -209,3 +232,9 @@ def get_fact_checks() -> list[dict]:
     """Get cached fact checks or return empty list."""
     data = cache.get_json("election:fact_checks")
     return data or []
+
+
+def get_featured_content() -> dict:
+    """Get cached featured content or return empty dict."""
+    data = cache.get_json("election:featured")
+    return data or {}

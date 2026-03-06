@@ -32,6 +32,15 @@ export function useFactChecks() {
   });
 }
 
+export function useFeaturedContent() {
+  return useQuery({
+    queryKey: ["featured-content"],
+    queryFn: api.getFeaturedContent,
+    refetchInterval: POLL_INTERVAL,
+    staleTime: 10000,
+  });
+}
+
 export function usePartyPerformance() {
   return useQuery({
     queryKey: ["party-performance"],
