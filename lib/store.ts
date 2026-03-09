@@ -17,6 +17,8 @@ interface ElectionStore {
   setSelectedPartyFilter: (party: string | null) => void;
   searchQuery: string;
   setSearchQuery: (query: string) => void;
+  wsConnected: boolean;
+  setWsConnected: (connected: boolean) => void;
 }
 
 export const useElectionStore = create<ElectionStore>((set) => ({
@@ -35,4 +37,6 @@ export const useElectionStore = create<ElectionStore>((set) => ({
   setSelectedPartyFilter: (party) => set({ selectedPartyFilter: party }),
   searchQuery: "",
   setSearchQuery: (query) => set({ searchQuery: query }),
+  wsConnected: false,
+  setWsConnected: (connected) => set({ wsConnected: connected }),
 }));

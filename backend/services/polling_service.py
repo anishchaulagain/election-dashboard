@@ -145,6 +145,26 @@ async def fetch_featured_content() -> dict:
             if 'resp' in locals() and hasattr(resp, 'text'):
                 print(f"[Polling] Response snippet: {resp.text[:200]}")
             return {}
+        
+    return {}
+
+
+async def broadcast_to_clients(data: dict):
+    """Send data to all connected WebSocket clients."""
+    from main import ws_clients
+    if not ws_clients:
+        return
+    
+    message = json.dumps(data, ensure_ascii=False)
+    disconnected = set()
+    for client in ws_clients:
+        try:
+            await client.send_text(message)
+        except Exception:
+            disconnected.add(client)
+    
+    for client in disconnected:
+        ws_clients.discard(client)
 
 
 async def fetch_and_store_all() -> dict:
@@ -191,6 +211,18 @@ async def fetch_and_store_all() -> dict:
                     all_events = events + existing_events
                     cache.set_json("election:events", all_events[:100], ex=600)
                     results["events"] = len(events)
+                    
+                    # Broadcast events real-time
+                    await broadcast_to_clients({"type": "events", "data": events})
+            
+            # Also broadcast stats update
+            await broadcast_to_clients({
+                "type": "update",
+                "data": {
+                    "last_updated": datetime.now().isoformat(),
+                    "candidate_count": len(candidates)
+                }
+            })
             
             results["success"] = True
 

@@ -29,7 +29,9 @@ const navItems = [
 export function Navbar() {
   const pathname = usePathname();
   const { isLoading, isError } = useEvents();
-  const isLive = !isLoading && !isError;
+  const { wsConnected } = useElectionStore();
+  const isLive = wsConnected || (!isLoading && !isError);
+  const statusLabel = wsConnected ? "LIVE (WS)" : isLive ? "LIVE" : "CONNECTING";
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-xl">
@@ -85,7 +87,7 @@ export function Navbar() {
               )}
             />
             <span className="hidden sm:inline text-xs font-medium text-muted-foreground">
-              {isLive ? "LIVE" : "CONNECTING"}
+              {statusLabel}
             </span>
           </div>
 

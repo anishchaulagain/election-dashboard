@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { QueryProvider } from "@/components/providers/QueryProvider";
 import { Navbar } from "@/components/ui/Navbar";
+import WebSocketInit from "@/components/providers/WebSocketInit";
 
 export const metadata: Metadata = {
   title: "Nepal Election Intelligence Dashboard 2082",
@@ -29,6 +30,7 @@ export default function RootLayout({
       </head>
       <body className="min-h-screen antialiased">
         <QueryProvider>
+          <WebSocketInit />
           <Navbar />
           <main className="min-h-[calc(100vh-4rem)]">{children}</main>
           <footer className="border-t py-6 text-center text-xs text-muted-foreground">
